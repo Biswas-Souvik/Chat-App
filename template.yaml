@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: WebSocket API with shared utils (TypeScript)
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Timeout: 5
+    MemorySize: 128
+    CodeUri: ./
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ConnectionsTable
+
+Resources:
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ChatConnectionsTable-souvik
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: connectionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: connectionId
+          KeyType: HASH
+
+  ConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ChatConnectFunction-souvik
+      Handler: connect.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - src/lambdas/connect.ts
+        External:
+          - '@aws-sdk/*'
+
+  DisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ChatDisconnectFunction-souvik
+      Handler: disconnect.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - src/lambdas/disconnect.ts
+        External:
+          - '@aws-sdk/*'
+
+  SendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ChatSendMessageFunction-souvik
+      Handler: sendMessage.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ConnectionsTable
+        - Statement:
+            Effect: Allow
+            Action: execute-api:ManageConnections
+            Resource: arn:aws:execute-api:*:*:*/*/*/@connections/*
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - src/lambdas/sendMessage.ts
+        External:
+          - '@aws-sdk/*'
+
+  DefaultFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ChatDefaultFunction-souvik
+      Handler: default.handler
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action: execute-api:ManageConnections
+            Resource: arn:aws:execute-api:*:*:*/*/*/@connections/*
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - src/lambdas/default.ts
+        External:
+          - '@aws-sdk/*'
