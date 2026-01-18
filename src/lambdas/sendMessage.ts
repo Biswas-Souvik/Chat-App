@@ -1,4 +1,5 @@
 import { scanConnections } from '../utils/dynamodb';
+import { getResponse } from '../utils/lambda';
 import { postToConnection } from '../utils/websocket';
 
 export const handler = async (event: any) => {
@@ -11,15 +12,15 @@ export const handler = async (event: any) => {
 
     await Promise.all(
       connections.map(({ connectionId }: any) =>
-        connectionId !== event.requestContext.connectionId
-          ? postToConnection(endpoint, connectionId, message)
-          : Promise.resolve()
-      )
+        connectionId === event.requestContext.connectionId
+          ? Promise.resolve()
+          : postToConnection(endpoint, connectionId, message),
+      ),
     );
 
-    return { statusCode: 200 };
+    return getResponse();
   } catch (err) {
     console.error(err);
-    return { statusCode: 500 };
+    return getResponse(500);
   }
 };

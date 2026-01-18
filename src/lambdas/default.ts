@@ -1,4 +1,5 @@
 import { getConnectionInfo, postToConnection } from '../utils/websocket';
+import { getResponse } from '../utils/lambda';
 
 export const handler = async (event: any) => {
   try {
@@ -10,8 +11,9 @@ export const handler = async (event: any) => {
 
     await postToConnection(endpoint, connectionId, JSON.stringify(info));
 
-    return { statusCode: 200 };
+    return getResponse();
   } catch (err) {
     console.error((err as Error).message);
+    return getResponse(500);
   }
 };

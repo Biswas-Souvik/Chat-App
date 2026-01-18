@@ -1,12 +1,14 @@
 import { deleteConnection } from '../utils/dynamodb';
+import { getResponse } from '../utils/lambda';
 
 export const handler = async (event: any) => {
   try {
     console.log(JSON.stringify(event, null, 2));
     await deleteConnection(event.requestContext.connectionId);
-    return { statusCode: 200 };
+
+    return getResponse();
   } catch (err) {
     console.error(err);
-    return { statusCode: 500 };
+    return getResponse(500);
   }
 };
