@@ -61,10 +61,7 @@ So every message **must include an `action` field**.
 Paste this JSON into the `wscat` prompt:
 
 ```json
-{
-  "action": "sendMessage",
-  "message": "Hello, World! I am Souvik"
-}
+{ "action": "sendMessage", "message": "Hello, World! I am Souvik" }
 ```
 
 Triggers the **`sendMessage`** route
