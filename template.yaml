@@ -25,6 +25,7 @@ Resources:
         - AttributeName: connectionId
           KeyType: HASH
 
+  # Lambda Functions
   ConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -107,6 +108,7 @@ Resources:
         External:
           - '@aws-sdk/*'
 
+  # API and Stage
   ChatApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -216,6 +218,55 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ChatApi}/*/*
 
+  # Api Log
+  ChatApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: /aws/apigateway/websocket/ChatApi-souvik
+      RetentionInDays: 14
+
+  # Lambda Logs
+  ConnectFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ConnectFunction}
+      RetentionInDays: 14
+
+  DisconnectFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DisconnectFunction}
+      RetentionInDays: 14
+
+  SendMessageFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SendMessageFunction}
+      RetentionInDays: 14
+
+  DefaultFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DefaultFunction}
+      RetentionInDays: 14
+
+  JwtLeaveTrackerFunctionSouvikLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${JwtLeaveTrackerFunctionSouvik}
+      RetentionInDays: 14
 Outputs:
   WebSocketUrl:
     Value: !Sub wss://${ChatApi}.execute-api.${AWS::Region}.amazonaws.com/test
